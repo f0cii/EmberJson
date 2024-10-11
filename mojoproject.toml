@@ -1,0 +1,26 @@
+[project]
+authors = ["Brian Grenier <grenierb96@gmail.com>"]
+channels = ["conda-forge", "https://conda.modular.com/max-nightly", "https://repo.prefix.dev/mojo-community-nightly", "https://repo.prefix.dev/mojo-community"]
+description = "A json library for Mojo"
+name = "MojoJson"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+license = "MIT"
+license-file = "LICENSE"
+homepage = "https://github.com/bgreni/MojoJson"
+repository = "https://github.com/bgreni/MojoJson"
+
+[tasks]
+build = { cmd = "bash scripts/build.sh nightly", env = {MODULAR_MOJO_IMPORT_PATH = "$CONDA_PREFIX/lib/mojo"} }
+template = { cmd = "python3.12 scripts/templater.py -m nightly" }
+format = { cmd = "magic run mojo format -l 120 lightbug_http" }
+test = { cmd = "magic run mojo test" }
+
+[feature.nightly]
+channels = ["conda-forge", "https://conda.modular.com/max-nightly", "https://repo.prefix.dev/mojo-community-nightly", "https://repo.prefix.dev/mojo-community"]
+
+[feature.nightly.dependencies]
+max = ">=24.5.0,<25"
+
+[environments]
+nightly = ["nightly"]
