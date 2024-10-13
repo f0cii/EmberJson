@@ -2,6 +2,7 @@ from .reader import Reader
 from .value import Value, Null
 from collections import Dict
 
+
 @value
 struct Object(CollectionElement):
     alias Type = Dict[String, Value]
@@ -29,19 +30,20 @@ struct Object(CollectionElement):
         while reader.peek() != "}":
             reader.skip_whitespace()
             if reader.peek() != '"':
+                print(reader.remaining())
                 raise Error("Invalid identifier")
             reader.inc()
             var ident = reader.read_until('"')
             reader.inc()
             reader.skip_whitespace()
-            if reader.peek() != ':':
+            if reader.peek() != ":":
+                print(reader.remaining())
                 raise Error("Invalid identifier")
             reader.inc()
             var val = Value._from_reader(reader)
             reader.skip_if(",")
             reader.skip_whitespace()
             out[ident] = val^
-            print("pee:", reader.peek())
         reader.inc()
         return out
 

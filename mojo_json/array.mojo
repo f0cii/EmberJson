@@ -2,6 +2,7 @@ from .object import Object
 from .value import Value
 from .reader import Reader
 
+
 @value
 struct Array(CollectionElement, Sized):
     alias Type = List[Value]

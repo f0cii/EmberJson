@@ -1,5 +1,6 @@
 from utils import StringSlice
 
+
 struct Reader:
     var _data: String
     var _index: Int
@@ -10,16 +11,17 @@ struct Reader:
 
     fn peek(self) -> String:
         return self._data[self._index]
-    
+
     fn next(inout self, chars: Int = 1) -> String:
         var start = self._index
         self.inc(chars)
         return self._data[start : start + chars]
-    
+
     fn read_until(inout self, char: String) -> String:
         @parameter
         fn not_char(c: String) -> Bool:
             return c != char
+
         return self.read_while[not_char]()
 
     fn read_while[func: fn (char: String) capturing -> Bool](inout self) -> String:
@@ -31,7 +33,7 @@ struct Reader:
     fn skip_whitespace(inout self):
         @parameter
         fn is_ws(char: String) -> Bool:
-            return char == "\n" or char == "\r" or char == " "
+            return char == "\n" or char == "\r" or char == " " or char == "\t"
 
         while self._index < len(self._data) and is_ws(self.peek()):
             self.inc()
@@ -42,3 +44,6 @@ struct Reader:
     fn skip_if(inout self, char: String):
         if self.peek() == char:
             self.inc()
+
+    fn remaining(self) -> String:
+        return self._data[self._index :]

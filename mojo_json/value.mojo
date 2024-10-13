@@ -108,6 +108,5 @@ struct Value(CollectionElement, Stringable):
     
     @staticmethod
     fn from_string(owned input: String) raises -> Value:
-        print(input)
         var r = Reader(input^)
         return Value._from_reader(r)

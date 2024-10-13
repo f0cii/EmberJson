@@ -13,8 +13,9 @@ repository = "https://github.com/bgreni/MojoJson"
 [tasks]
 build = { cmd = "bash scripts/build.sh nightly", env = {MODULAR_MOJO_IMPORT_PATH = "$CONDA_PREFIX/lib/mojo"} }
 template = { cmd = "python3.12 scripts/templater.py -m nightly" }
-format = { cmd = "magic run mojo format -l 120 lightbug_http" }
+format = { cmd = "magic run mojo format -l 120 mojo_json" }
 test = { cmd = "magic run mojo test" }
+bench = { cmd = "magic run mojo bench.mojo" }
 
 [feature.nightly]
 channels = ["conda-forge", "https://conda.modular.com/max-nightly", "https://repo.prefix.dev/mojo-community-nightly", "https://repo.prefix.dev/mojo-community"]

@@ -5,7 +5,6 @@ from .object import Object
 from .array import Array
 
 
-
 @value
 struct JSON:
     alias Type = Variant[Object, Array]
@@ -16,9 +15,9 @@ struct JSON:
 
     @staticmethod
     fn from_string(owned input: String) raises -> JSON:
-        var data: JSON.Type = JSON()
+        var data: Self.Type = Self.Type(Object())
         var reader = Reader(input^)
-        
+
         var next_char = reader.peek()
         if next_char == "{":
             data = Object._from_reader(reader)
