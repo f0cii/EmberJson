@@ -1,6 +1,7 @@
 from .object import Object
 from .array import Array
 from .reader import Reader
+from utils import Variant
 
 @value
 struct Null(Stringable, EqualityComparableCollectionElement):
@@ -72,7 +73,7 @@ struct Value(CollectionElement, Stringable):
         return self.get[Array]()
 
     fn __str__(self) -> String:
-        return "fart"
+        return ""
 
     @staticmethod
     fn _from_reader(inout reader: Reader) raises -> Value:
@@ -101,7 +102,6 @@ struct Value(CollectionElement, Stringable):
             else:
                 v = num.unsafe_take[Float64]()
         else:
-            print(reader.peek())
             raise Error("Invalid json value")
         reader.skip_whitespace()
         return v

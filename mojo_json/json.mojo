@@ -25,10 +25,6 @@ struct JSON:
         elif next_char == "[":
             data = Array._from_reader(reader)
         else:
-            _scream()
+            raise Error("Invalid json")
 
         return JSON(data^)
-
-@always_inline
-fn _scream() raises:
-    raise Error("Invalid json")

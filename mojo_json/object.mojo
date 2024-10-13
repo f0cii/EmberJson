@@ -1,5 +1,6 @@
 from .reader import Reader
 from .value import Value, Null
+from collections import Dict
 
 @value
 struct Object(CollectionElement):
