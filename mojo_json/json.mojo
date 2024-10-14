@@ -15,9 +15,9 @@ struct JSON:
 
     @staticmethod
     fn from_string(owned input: String) raises -> JSON:
-        var data: Self.Type = Self.Type(Object())
+        var data = Self()
         var reader = Reader(input^)
-
+        reader.skip_whitespace()
         var next_char = reader.peek()
         if next_char == "{":
             data = Object._from_reader(reader)
@@ -26,4 +26,4 @@ struct JSON:
         else:
             raise Error("Invalid json")
 
-        return JSON(data^)
+        return data
