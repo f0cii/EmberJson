@@ -7,7 +7,7 @@ from os import abort
 
 
 @value
-struct JSON(CollectionElement, Stringable, Formattable, Representable):
+struct JSON(EqualityComparableCollectionElement, Stringable, Formattable, Representable):
     alias Type = Variant[Object, Array]
     var _data: Self.Type
 
@@ -33,6 +33,16 @@ struct JSON(CollectionElement, Stringable, Formattable, Representable):
         if not self.is_array():
             raise Error("Object key expected to be string")
         return self.array()[ind]
+
+    fn __eq__(self, other: Self) -> Bool:
+        if self.is_object() and other.is_object():
+            return self.object() == other.object()
+        if self.is_array() and other.is_array():
+            return self.array() == other.array()
+        return False
+
+    fn __ne__(self, other: Self) -> Bool:
+        return not self == other
 
     fn format_to(self, inout writer: Formatter):
         if self.is_object():

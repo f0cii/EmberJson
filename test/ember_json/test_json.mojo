@@ -25,3 +25,14 @@ def test_json_array():
 
     with assert_raises():
         _ = json["key"]
+
+def test_equality():
+
+    var ob = JSON.from_string('{"key": 123}')
+    var ob2 = JSON.from_string('{"key": 123}')
+    var arr = JSON.from_string('[123, 345]')
+
+    assert_equal(ob, ob2)
+    ob["key"] = 456
+    assert_not_equal(ob, ob2)
+    assert_not_equal(ob, arr)
