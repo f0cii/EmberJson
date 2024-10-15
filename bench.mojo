@@ -11,6 +11,7 @@ fn main() raises:
     m.bench_function[benchmark_json_array_medium](BenchId("JsonArrayMedium"))
     m.bench_function[benchmark_json_array_large](BenchId("JsonArrayLarge"))
     m.bench_function[benchmark_json_array_extra_large](BenchId("JsonArrayExtraLarge"))
+    m.bench_function[benchmark_json_big_big_big](BenchId("JsonArrayVeryBig"))
     m.dump_report()
 
 @parameter
@@ -39,15 +40,27 @@ fn benchmark_json_array_large(inout b: Bencher) raises:
 
 @parameter
 fn benchmark_json_array_extra_large(inout b: Bencher) raises:
-    var f = open("./bench_data/users_1k.json", "r")
-    var data = f.read()
+    var data: String
+    with open("./bench_data/users_1k.json", "r") as f:
+        data = f.read()
         
     @always_inline
     @parameter
     fn do() raises:
         _ = JSON.from_string(data)
     b.iter[do]()
-    f.close()
+
+@parameter
+fn benchmark_json_big_big_big(inout b: Bencher) raises:
+    var data: String
+    with open("./bench_data/canada_data.json", "r") as f:
+        data = f.read()
+    
+    @always_inline
+    @parameter
+    fn do() raises:
+        _ = JSON.from_string(data)
+    b.iter[do]()
 
 # source https://opensource.adobe.com/Spry/samples/data_region/JSONDataSetSample.html
 var small_data = """{
