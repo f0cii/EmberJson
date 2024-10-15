@@ -9,18 +9,18 @@ struct Object(EqualityComparableCollectionElement, Sized, Formattable, Stringabl
     alias Type = Dict[String, Value]
     var _data: Self.Type
 
+    var __null_v: Null
+
     fn __init__(inout self):
         self._data = Self.Type()
+        self.__null_v = Null()
 
     @always_inline
     fn __setitem__(inout self, key: String, owned item: Value):
         self._data[key] = item^
 
-    fn __getitem__(self, key: String) -> Value:
-        try:
-            return self._data[key]
-        except:
-            return Null()
+    fn __getitem__(ref [_]self, key: String) raises -> ref[self._data._entries[0].value().value] Value:
+        return self._data._find_ref(key)
 
     @always_inline
     fn __contains__(self, key: String) -> Bool:
@@ -34,11 +34,14 @@ struct Object(EqualityComparableCollectionElement, Sized, Formattable, Stringabl
     fn __eq__(self, other: Self) -> Bool:
         if len(self) != len(other):
             return False
-        
+
         for k in self._data:
             if k[] not in other:
                 return False
-            if self[k[]] != other[k[]]:
+            try:
+                if self[k[]] != other[k[]]:
+                    return False
+            except:
                 return False
         return True
 

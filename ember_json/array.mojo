@@ -15,7 +15,7 @@ struct Array(EqualityComparableCollectionElement, Sized, Formattable, Stringable
     fn __init__(inout self, owned *values: Value):
         self._data = Self.Type(variadic_list=values^)
 
-    fn __getitem__(self, ind: Int) -> Value:
+    fn __getitem__(ref [_]self, ind: Int) -> ref[self._data] Value:
         return self._data[ind]
 
     fn __setitem(inout self, ind: Int, owned item: Value):
@@ -33,7 +33,7 @@ struct Array(EqualityComparableCollectionElement, Sized, Formattable, Stringable
     @always_inline
     fn __eq__(self, other: Self) -> Bool:
         return self._data == other._data
-    
+
     @always_inline
     fn __ne__(self, other: Self) -> Bool:
         return self._data != other._data

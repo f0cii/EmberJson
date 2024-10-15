@@ -1,6 +1,6 @@
 [project]
 authors = ["Brian Grenier <grenierb96@gmail.com>"]
-channels = ["conda-forge", "https://conda.modular.com/max-nightly", "https://repo.prefix.dev/mojo-community-nightly", "https://repo.prefix.dev/mojo-community"]
+channels = ["conda-forge", "https://conda.modular.com/max-nightly/"]
 description = "A json library for Mojo"
 name = "EmberJson"
 platforms = ["osx-arm64"]
@@ -11,17 +11,11 @@ homepage = "https://github.com/bgreni/EmberJson"
 repository = "https://github.com/bgreni/EmberJson"
 
 [tasks]
-build = { cmd = "bash scripts/build.sh nightly", env = {MODULAR_MOJO_IMPORT_PATH = "$CONDA_PREFIX/lib/mojo"} }
-template = { cmd = "python3.12 scripts/templater.py -m nightly" }
+build = { cmd = "bash scripts/build.sh", env = {MODULAR_MOJO_IMPORT_PATH = "$CONDA_PREFIX/lib/mojo"} }
+template = { cmd = "python3.12 scripts/templater.py" }
 format = { cmd = "magic run mojo format -l 120 ember_json" }
 test = { cmd = "magic run mojo test" }
 bench = { cmd = "magic run mojo bench.mojo" }
 
-[feature.nightly]
-channels = ["conda-forge", "https://conda.modular.com/max-nightly", "https://repo.prefix.dev/mojo-community-nightly", "https://repo.prefix.dev/mojo-community"]
-
-[feature.nightly.dependencies]
-max = ">=24.5.0,<25"
-
-[environments]
-nightly = ["nightly"]
+[dependencies]
+max = ">=24.6.0.dev2024101405"

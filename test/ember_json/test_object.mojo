@@ -24,7 +24,8 @@ def test_nested_object():
     assert_true(ob["nested"].object()["foo"].isa[Null]())
 
     # missing keys will just return null
-    assert_true(ob["DOES NOT EXIST"].isa[Null]())
+    with assert_raises():
+        _ = ob["DOES NOT EXIST"]
 
 def test_arr_in_object():
     var s = '{"arr": [null, 2, "foo"]}'

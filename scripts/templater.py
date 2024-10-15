@@ -27,14 +27,6 @@ def build_dependency_list(dependencies: dict[str, str]) -> str:
 
 
 def main():
-    # Configure the parser to receive the mode argument.
-    parser = argparse.ArgumentParser(description='Generate a recipe for the project.')
-    parser.add_argument('-m',
-        '--mode',
-        default="default",
-        help="The environment to generate the recipe for. Defaults to 'default' for the standard vers"
-    )
-    args = parser.parse_args()
 
     # Load the project configuration and recipe template.
     config: dict[str, Any]
@@ -57,7 +49,7 @@ def main():
     .replace("{{PREFIX}}", repo_dir + "/output")
 
     # Dependencies are the only notable field that changes between environments.
-    dependencies = config["dependencies"] if args.mode == "default" else config["feature"][args.mode]["dependencies"]
+    dependencies = config["dependencies"]
 
     deps = build_dependency_list(dependencies)
     recipe = recipe.replace("{{DEPENDENCIES}}", deps)
