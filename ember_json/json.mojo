@@ -7,7 +7,7 @@ from os import abort
 
 
 @value
-struct JSON(EqualityComparableCollectionElement, Stringable, Formattable, Representable):
+struct JSON(EqualityComparableCollectionElement, Stringable, Formattable, Representable, Sized):
     alias Type = Variant[Object, Array]
     var _data: Self.Type
 
@@ -18,9 +18,11 @@ struct JSON(EqualityComparableCollectionElement, Stringable, Formattable, Repres
     fn get[T: CollectionElement](ref [_]self: Self) -> ref [self._data] T:
         return self._data.__getitem__[T]()
 
+    @always_inline
     fn object(ref [_]self) -> ref[self._data] Object:
         return self.get[Object]()
 
+    @always_inline
     fn array(ref [_]self) -> ref[self._data] Array:
         return self.get[Array]()
 
@@ -41,8 +43,13 @@ struct JSON(EqualityComparableCollectionElement, Stringable, Formattable, Repres
             return self.array() == other.array()
         return False
 
+    @always_inline
     fn __ne__(self, other: Self) -> Bool:
         return not self == other
+
+    @always_inline
+    fn __len__(self) -> Int:
+        return len(self.array()) if self.is_array() else len(self.object())
 
     fn format_to(self, inout writer: Formatter):
         if self.is_object():
@@ -50,18 +57,23 @@ struct JSON(EqualityComparableCollectionElement, Stringable, Formattable, Repres
         elif self.is_array():
             self.array().format_to(writer)
 
+    @always_inline
     fn __str__(self) -> String:
         return String.format_sequence(self)
 
+    @always_inline
     fn __repr__(self) -> String:
         return self.__str__()
 
+    @always_inline
     fn isa[T: CollectionElement](self) -> Bool:
         return self._data.isa[T]()
 
+    @always_inline
     fn is_object(self) -> Bool:
         return self.isa[Object]()
 
+    @always_inline
     fn is_array(self) -> Bool:
         return self.isa[Array]()
 

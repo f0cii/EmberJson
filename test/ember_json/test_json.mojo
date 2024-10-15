@@ -10,6 +10,8 @@ def test_json_object():
 
     assert_equal(str(json), '{"key": 123}')
 
+    assert_equal(len(json), 1)
+
     with assert_raises():
         _ = json[2]
 
@@ -22,6 +24,8 @@ def test_json_array():
     assert_equal(json[0].int(), 123)
 
     assert_equal(str(json), '[123, 345]')
+
+    assert_equal(len(json), 2)
 
     with assert_raises():
         _ = json["key"]

@@ -9,11 +9,8 @@ struct Object(EqualityComparableCollectionElement, Sized, Formattable, Stringabl
     alias Type = Dict[String, Value]
     var _data: Self.Type
 
-    var __null_v: Null
-
     fn __init__(inout self):
         self._data = Self.Type()
-        self.__null_v = Null()
 
     @always_inline
     fn __setitem__(inout self, key: String, owned item: Value):
