@@ -12,7 +12,7 @@ repository = "https://github.com/bgreni/EmberJson"
 
 [tasks]
 build = { cmd = "bash scripts/build.sh", env = {MODULAR_MOJO_IMPORT_PATH = "$CONDA_PREFIX/lib/mojo"} }
-template = { cmd = "python3.12 scripts/templater.py" }
+template = { cmd = "magic run python3 scripts/templater.py" }
 format = { cmd = "magic run mojo format -l 120 ember_json" }
 test = { cmd = "magic run mojo test" }
 bench = { cmd = "magic run mojo bench.mojo" }
