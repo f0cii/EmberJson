@@ -1,4 +1,5 @@
 from ember_json.array import Array
+from ember_json import Object
 from ember_json.value import Null, Value
 from testing import *
 
@@ -42,7 +43,26 @@ def test_contains():
     assert_true(True not in arr)
 
 def test_variadic_init():
-    var arr = Array(123, "foo", Null())
+    var arr = Array(123,
+        "foo",
+        Null()
+    )
+    var ob = Object()
+    ob["key"] = "value"
+
+    var arr2 = Array(
+        Int(45),
+        45.5,
+        Float64(45.5),
+        arr,
+        ob
+    )
     assert_equal(arr[0].int(), 123)
     assert_equal(arr[1].string(), "foo")
     assert_equal(arr[2].null(), Null())
+
+    assert_equal(arr2[0], 45)
+    assert_equal(arr2[1], 45.5)
+    assert_equal(arr2[2], 45.5)
+    assert_true(arr2[3].isa[Array]())
+    assert_true(arr2[4].isa[Object]())

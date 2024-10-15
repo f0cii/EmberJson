@@ -13,6 +13,24 @@ struct JSON:
     fn __init__(inout self):
         self._data = Object()
 
+    fn isa[T: CollectionElement](self) -> Bool:
+        return self._data.isa[T]()
+
+    fn is_object(self) -> Bool:
+        return self.isa[Object]()
+
+    fn is_array(self) -> Bool:
+        return self.isa[Array]()
+
+    fn get[T: CollectionElement](self) -> T:
+        return self._data[T]
+
+    fn object(self) -> Object:
+        return self.get[Object]()
+
+    fn array(self) -> Array:
+        return self.get[Array]()
+
     @staticmethod
     fn from_string(owned input: String) raises -> JSON:
         var data = Self()
