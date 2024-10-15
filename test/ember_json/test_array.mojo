@@ -66,3 +66,10 @@ def test_variadic_init():
     assert_equal(arr2[2], 45.5)
     assert_true(arr2[3].isa[Array]())
     assert_true(arr2[4].isa[Object]())
+
+def test_equality():
+    var arr1 = Array(123, 456)
+    var arr2 = Array(123, 456)
+    var arr3 = Array(123, "456")
+    assert_equal(arr1, arr2)
+    assert_not_equal(arr1, arr3)

@@ -22,6 +22,8 @@ def test_nested_object():
     assert_true("nested" in ob)
     assert_true(ob["nested"].isa[Object]())
     assert_true(ob["nested"].object()["foo"].isa[Null]())
+
+    # missing keys will just return null
     assert_true(ob["DOES NOT EXIST"].isa[Null]())
 
 def test_arr_in_object():
@@ -56,3 +58,13 @@ def test_single_quote_value():
     var s = "\"key\": '123'"
     with assert_raises():
         _ = Object.from_string(s)
+
+def test_equality():
+    var ob1 = Object()
+    ob1["key"] = 123
+    var ob2 = ob1
+    var ob3 = ob1
+    ob3["key"] = Null()
+
+    assert_equal(ob1, ob2)
+    assert_not_equal(ob1, ob3)

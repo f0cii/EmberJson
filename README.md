@@ -21,4 +21,5 @@ print(ob["key"].int()) # prints 123
 s = '[123, 456]'
 json = JSON.from_string(s)
 var arr = json.array()
+print(arr[0].int()) # prints 123
 ```
