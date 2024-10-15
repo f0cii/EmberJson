@@ -73,7 +73,7 @@ struct Value(EqualityComparableCollectionElement, Stringable, Formattable, Repre
 
     fn __init__(inout self, v: Bool):
         self._data = v
-
+    
     fn __copyinit__(inout self, other: Self):
         self._data = other._data
 

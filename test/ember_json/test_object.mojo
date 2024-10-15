@@ -1,6 +1,6 @@
-from mojo_json.object import Object
-from mojo_json.array import Array
-from mojo_json.value import Null
+from ember_json.object import Object
+from ember_json.array import Array
+from ember_json.value import Null
 from testing import *
 
 def test_object():

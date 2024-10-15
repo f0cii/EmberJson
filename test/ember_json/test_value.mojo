@@ -1,4 +1,4 @@
-from mojo_json.value import Value, Null
+from ember_json.value import Value, Null
 from testing import *
 
 def test_bool():

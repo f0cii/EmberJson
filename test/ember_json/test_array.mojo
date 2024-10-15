@@ -1,5 +1,5 @@
-from mojo_json.array import Array
-from mojo_json.value import Null, Value
+from ember_json.array import Array
+from ember_json.value import Null, Value
 from testing import *
 
 def test_array():

@@ -1,4 +1,4 @@
-from mojo_json import *
+from ember_json import *
 from benchmark import *
 from .bench_data import *
 

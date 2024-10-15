@@ -1,4 +1,4 @@
-from mojo_json.reader import Reader
+from ember_json.reader import Reader
 from testing import *
 
 def test_peek():
