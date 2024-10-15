@@ -96,7 +96,7 @@ struct Value(EqualityComparableCollectionElement, Stringable, Formattable, Repre
             return self.object() == other.object()
         elif self.isa[Array]() and other.isa[Array]():
             return self.array() == other.array()
-        return True
+        return False
 
     fn __ne__(self, other: Self) -> Bool:
         return not self == other
