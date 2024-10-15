@@ -19,19 +19,19 @@ struct JSON(EqualityComparableCollectionElement, Stringable, Formattable, Repres
         return self._data.__getitem__[T]()
 
     @always_inline
-    fn object(ref [_]self) -> ref[self._data] Object:
+    fn object(ref [_]self) -> ref [self._data] Object:
         return self.get[Object]()
 
     @always_inline
-    fn array(ref [_]self) -> ref[self._data] Array:
+    fn array(ref [_]self) -> ref [self._data] Array:
         return self.get[Array]()
 
-    fn __getitem__(ref [_]self, key: String) raises -> ref[self.object()._data._entries[0].value().value] Value:
+    fn __getitem__(ref [_]self, key: String) raises -> ref [self.object()._data._entries[0].value().value] Value:
         if not self.is_object():
             raise Error("Array index must be an int")
-        return  self.object().__getitem__(key)
+        return self.object().__getitem__(key)
 
-    fn __getitem__(ref [_]self, ind: Int) raises -> ref[self.array()._data] Value:
+    fn __getitem__(ref [_]self, ind: Int) raises -> ref [self.array()._data] Value:
         if not self.is_array():
             raise Error("Object key expected to be string")
         return self.array()[ind]

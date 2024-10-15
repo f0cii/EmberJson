@@ -32,7 +32,7 @@ fn _read_string(inout reader: Reader) raises -> String:
 
 @parameter
 fn is_numerical_component(char: String) -> Bool:
-    alias other_chars: String = ".eE+-"
+    alias other_chars = ".eE+-"
     return isdigit(ord(char)) or char in other_chars
 
 
