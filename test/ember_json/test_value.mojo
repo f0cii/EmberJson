@@ -14,6 +14,11 @@ def test_bool():
     assert_equal(v.get[Bool](), True)
     assert_equal(str(v), s)
 
+    with assert_raises():
+        _ = Value.from_string("falsee")
+    with assert_raises():
+        _ = Value.from_string("tue")
+
 def test_string():
     var s = '"Some String"'
     var v = Value.from_string(s)
@@ -33,6 +38,9 @@ def test_null():
     assert_true(v.isa[Null]())
     assert_equal(v.get[Null](), Null())
     assert_equal(str(v), s)
+
+    with assert_raises():
+        _ = Value.from_string("nil")
 
 def test_number():
     var v = Value.from_string("123")

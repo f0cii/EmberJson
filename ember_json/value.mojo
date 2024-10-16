@@ -1,6 +1,6 @@
 from .object import Object
 from .array import Array
-from .reader import Reader
+from .reader import Reader, Byte, Bytes, bytes_to_string, compare_bytes
 from utils import Variant
 from .constants import *
 
@@ -27,22 +27,32 @@ fn _read_string(inout reader: Reader) raises -> String:
     reader.inc()
     var res = reader.read_until(QUOTE)
     reader.inc()
-    return res
+    return bytes_to_string(res^)
 
 
+alias DOT = ord(".")
+alias LOW_E = ord("e")
+alias UPPER_E = ord("E")
+alias PLUS = ord("+")
+alias NEG = ord("-")
+
+
+@always_inline
 @parameter
-fn is_numerical_component(char: String) -> Bool:
-    alias other_chars = ".eE+-"
-    return isdigit(ord(char)) or char in other_chars
+fn is_numerical_component(char: Byte) -> Bool:
+    return isdigit(char) or char == DOT or char == LOW_E or char == UPPER_E or char == PLUS or char == NEG
 
 
 fn _read_number(inout reader: Reader) raises -> Variant[Int, Float64]:
     var num = reader.read_while[is_numerical_component]()
-    var is_float = num.find(".") != -1
+    var is_float = False
+    for b in num:
+        if b[] == DOT:
+            is_float = True
 
     if is_float:
-        return atof(num)
-    return atol(num)
+        return atof(bytes_to_string(num^))
+    return atol(bytes_to_string(num^))
 
 
 @value
@@ -161,13 +171,22 @@ struct Value(EqualityComparableCollectionElement, Stringable, Formattable, Repre
         if n == QUOTE:
             return _read_string(reader)
         elif n == T:
-            reader.inc(4)
+            var w = reader.read_word()
+            alias TRUE = Bytes(ord("t"), ord("r"), ord("u"), ord("e"))
+            if not compare_bytes(w, TRUE):
+                raise Error("Expected 'true', received: " + bytes_to_string(w))
             v = True
         elif n == F:
-            reader.inc(5)
+            var w = reader.read_word()
+            alias FALSE = Bytes(ord("f"), ord("a"), ord("l"), ord("s"), ord("e"))
+            if not compare_bytes(w, FALSE):
+                raise Error("Expected 'false', received: " + bytes_to_string(w))
             v = False
         elif n == N:
-            reader.inc(4)
+            var w = reader.read_word()
+            alias NULL = Bytes(ord("n"), ord("u"), ord("l"), ord("l"))
+            if not compare_bytes(w, NULL):
+                raise Error("Expected 'null', received: " + bytes_to_string(w))
             v = Null()
         elif n == LCURLY:
             v = Object._from_reader(reader)

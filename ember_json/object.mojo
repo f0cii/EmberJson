@@ -1,4 +1,4 @@
-from .reader import Reader
+from .reader import Reader, bytes_to_string
 from .value import Value, Null
 from collections import Dict
 from .constants import *
@@ -85,7 +85,7 @@ struct Object(EqualityComparableCollectionElement, Sized, Formattable, Stringabl
             var val = Value._from_reader(reader)
             reader.skip_if(COMMA)
             reader.skip_whitespace()
-            out[ident] = val^
+            out[bytes_to_string(ident^)] = val^
         reader.inc()
         return out
 

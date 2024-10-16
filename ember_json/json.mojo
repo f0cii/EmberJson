@@ -3,6 +3,7 @@ from utils import Variant
 from .reader import Reader
 from .object import Object
 from .array import Array
+from .constants import *
 from os import abort
 
 
@@ -83,9 +84,9 @@ struct JSON(EqualityComparableCollectionElement, Stringable, Formattable, Repres
         var reader = Reader(input^)
         reader.skip_whitespace()
         var next_char = reader.peek()
-        if next_char == "{":
+        if next_char == LCURLY:
             data = Object._from_reader(reader)
-        elif next_char == "[":
+        elif next_char == LBRACKET:
             data = Array._from_reader(reader)
         else:
             raise Error("Invalid json")
