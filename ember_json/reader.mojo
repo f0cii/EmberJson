@@ -5,6 +5,10 @@ from .constants import *
 alias Bytes = String._buffer_type
 alias Byte = UInt8
 
+@always_inline
+fn to_byte(s: String) -> Byte:
+    return Byte(ord(s))
+
 
 fn is_space(char: Byte) -> Bool:
     return char == SPACE or char == NEWLINE or char == TAB or char == LINE_FEED

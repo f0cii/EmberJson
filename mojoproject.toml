@@ -18,4 +18,4 @@ test = { cmd = "magic run mojo test" }
 bench = { cmd = "magic run mojo bench.mojo" }
 
 [dependencies]
-max = ">=24.6.0.dev2024101405"
+max = ">=24.6.0.dev2024101605, <=25"

@@ -48,7 +48,6 @@ def main():
     .replace("{{VERSION}}", config["project"]["version"]) \
     .replace("{{PREFIX}}", repo_dir + "/output")
 
-    # Dependencies are the only notable field that changes between environments.
     dependencies = config["dependencies"]
 
     deps = build_dependency_list(dependencies)

@@ -14,9 +14,9 @@ def test_bool():
     assert_equal(v.get[Bool](), True)
     assert_equal(str(v), s)
 
-    with assert_raises():
+    with assert_raises(contains="Expected 'false'"):
         _ = Value.from_string("falsee")
-    with assert_raises():
+    with assert_raises(contains="Expected 'true'"):
         _ = Value.from_string("tue")
 
 def test_string():
@@ -39,7 +39,7 @@ def test_null():
     assert_equal(v.get[Null](), Null())
     assert_equal(str(v), s)
 
-    with assert_raises():
+    with assert_raises(contains="Expected 'null'"):
         _ = Value.from_string("nil")
 
 def test_number():

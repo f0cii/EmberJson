@@ -23,7 +23,6 @@ def test_nested_object():
     assert_true(ob["nested"].isa[Object]())
     assert_true(ob["nested"].object()["foo"].isa[Null]())
 
-    # missing keys will just return null
     with assert_raises():
         _ = ob["DOES NOT EXIST"]
 
@@ -69,3 +68,7 @@ def test_equality():
 
     assert_equal(ob1, ob2)
     assert_not_equal(ob1, ob3)
+
+def test_bad_value():
+    with assert_raises():
+        _ = Object.from_string('{"key": nil}')

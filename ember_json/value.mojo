@@ -1,6 +1,6 @@
 from .object import Object
 from .array import Array
-from .reader import Reader, Byte, Bytes, bytes_to_string, compare_bytes
+from .reader import Reader, Byte, Bytes, bytes_to_string, compare_bytes, to_byte
 from utils import Variant, Span
 from .constants import *
 
@@ -30,15 +30,15 @@ fn _read_string(inout reader: Reader) raises -> String:
     return bytes_to_string(res)
 
 
-alias DOT = ord(".")
-alias LOW_E = ord("e")
-alias UPPER_E = ord("E")
-alias PLUS = ord("+")
-alias NEG = ord("-")
+alias DOT = to_byte(".")
+alias LOW_E = to_byte("e")
+alias UPPER_E = to_byte("E")
+alias PLUS = to_byte("+")
+alias NEG = to_byte("-")
 
-var TRUE = Bytes(ord("t"), ord("r"), ord("u"), ord("e"))
-var FALSE = Bytes(ord("f"), ord("a"), ord("l"), ord("s"), ord("e"))
-var NULL = Bytes(ord("n"), ord("u"), ord("l"), ord("l"))
+var TRUE = Bytes(to_byte("t"), to_byte("r"), to_byte("u"), to_byte("e"))
+var FALSE = Bytes(to_byte("f"), to_byte("a"), to_byte("l"), to_byte("s"), to_byte("e"))
+var NULL = Bytes(to_byte("n"), to_byte("u"), to_byte("l"), to_byte("l"))
 
 @always_inline
 @parameter
