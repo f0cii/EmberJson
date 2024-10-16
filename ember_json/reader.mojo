@@ -11,12 +11,13 @@ fn is_space(char: Byte) -> Bool:
 
 
 @always_inline
-fn bytes_to_string(owned b: Bytes) -> String:
-    b.append(0)
-    return String(b^)
+fn bytes_to_string[origin: MutableOrigin,//](b: Span[Byte, origin]) -> String:
+    var s = String(b)
+    s._buffer.append(0)
+    return s
 
 
-fn compare_bytes(l: Bytes, r: Bytes) -> Bool:
+fn compare_bytes[o1: MutableOrigin, o2: MutableOrigin,//](l: Span[Byte, o1], r: Span[Byte, o2]) -> Bool:
     if len(l) != len(r):
         return False
     return memcmp(l.unsafe_ptr(), r.unsafe_ptr(), len(l)) == 0
@@ -37,19 +38,19 @@ struct Reader:
     fn peek(self) -> Byte:
         return self._data[self._index]
 
-    fn next(inout self, chars: Int = 1) -> Bytes:
+    fn next(inout self, chars: Int = 1) -> Span[Byte, __origin_of(self._data)]:
         var start = self._index
         self.inc(chars)
-        return self._data[start : start + chars]
+        return Span(self._data)[start : start + chars]
 
-    fn read_until(inout self, char: Byte) -> Bytes:
+    fn read_until(inout self, char: Byte) -> Span[Byte, __origin_of(self._data)]:
         @parameter
         fn not_char(c: Byte) -> Bool:
             return c != char
 
         return self.read_while[not_char]()
 
-    fn read_word(inout self) -> Bytes:
+    fn read_word(inout self) -> Span[Byte, __origin_of(self._data)]:
         @always_inline
         @parameter
         fn func(c: Byte) -> Bool:
@@ -57,11 +58,11 @@ struct Reader:
 
         return self.read_while[func]()
 
-    fn read_while[func: fn (char: Byte) capturing -> Bool](inout self) -> Bytes:
+    fn read_while[func: fn (char: Byte) capturing -> Bool](inout self) -> Span[Byte, __origin_of(self._data)]:
         var start = self._index
         while self._index < len(self._data) and func(self.peek()):
             self.inc()
-        return self._data[start : self._index]
+        return Span(self._data)[start : self._index]
 
     @always_inline
     fn skip_whitespace(inout self):
@@ -78,8 +79,8 @@ struct Reader:
             self.inc()
 
     @always_inline
-    fn remaining(self) -> Bytes:
-        return self._data[self._index :]
+    fn remaining(self) -> Span[Byte, __origin_of(self._data)]:
+        return Span(self._data)[self._index :]
 
     @always_inline
     fn bytes_remaining(self) -> Int:

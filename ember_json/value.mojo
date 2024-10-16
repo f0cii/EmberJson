@@ -1,7 +1,7 @@
 from .object import Object
 from .array import Array
 from .reader import Reader, Byte, Bytes, bytes_to_string, compare_bytes
-from utils import Variant
+from utils import Variant, Span
 from .constants import *
 
 
@@ -27,7 +27,7 @@ fn _read_string(inout reader: Reader) raises -> String:
     reader.inc()
     var res = reader.read_until(QUOTE)
     reader.inc()
-    return bytes_to_string(res^)
+    return bytes_to_string(res)
 
 
 alias DOT = ord(".")
@@ -36,12 +36,14 @@ alias UPPER_E = ord("E")
 alias PLUS = ord("+")
 alias NEG = ord("-")
 
+var TRUE = Bytes(ord("t"), ord("r"), ord("u"), ord("e"))
+var FALSE = Bytes(ord("f"), ord("a"), ord("l"), ord("s"), ord("e"))
+var NULL = Bytes(ord("n"), ord("u"), ord("l"), ord("l"))
 
 @always_inline
 @parameter
 fn is_numerical_component(char: Byte) -> Bool:
     return isdigit(char) or char == DOT or char == LOW_E or char == UPPER_E or char == PLUS or char == NEG
-
 
 fn _read_number(inout reader: Reader) raises -> Variant[Int, Float64]:
     var num = reader.read_while[is_numerical_component]()
@@ -114,28 +116,28 @@ struct Value(EqualityComparableCollectionElement, Stringable, Formattable, Repre
     fn isa[T: CollectionElement](self) -> Bool:
         return self._data.isa[T]()
 
-    fn get[T: CollectionElement](self) -> T:
+    fn get[T: CollectionElement](ref [_]self) -> ref[self._data] T:
         return self._data[T]
 
-    fn int(self) -> Int:
+    fn int(ref [_]self) -> ref[self._data] Int:
         return self.get[Int]()
 
-    fn null(self) -> Null:
+    fn null(ref [_]self) -> ref[self._data] Null:
         return self.get[Null]()
 
-    fn string(self) -> String:
+    fn string(ref [_]self) -> ref[self._data] String:
         return self.get[String]()
 
-    fn float(self) -> Float64:
+    fn float(ref [_]self) -> ref[self._data] Float64:
         return self.get[Float64]()
 
-    fn bool(self) -> Bool:
+    fn bool(ref [_]self) -> ref[self._data] Bool:
         return self.get[Bool]()
 
-    fn object(self) -> Object:
+    fn object(ref [_]self) -> ref[self._data] Object:
         return self.get[Object]()
 
-    fn array(self) -> Array:
+    fn array(ref [_]self) -> ref[self._data] Array:
         return self.get[Array]()
 
     fn format_to(self, inout writer: Formatter):
@@ -172,19 +174,16 @@ struct Value(EqualityComparableCollectionElement, Stringable, Formattable, Repre
             return _read_string(reader)
         elif n == T:
             var w = reader.read_word()
-            alias TRUE = Bytes(ord("t"), ord("r"), ord("u"), ord("e"))
             if not compare_bytes(w, TRUE):
                 raise Error("Expected 'true', received: " + bytes_to_string(w))
             v = True
         elif n == F:
             var w = reader.read_word()
-            alias FALSE = Bytes(ord("f"), ord("a"), ord("l"), ord("s"), ord("e"))
             if not compare_bytes(w, FALSE):
                 raise Error("Expected 'false', received: " + bytes_to_string(w))
             v = False
         elif n == N:
             var w = reader.read_word()
-            alias NULL = Bytes(ord("n"), ord("u"), ord("l"), ord("l"))
             if not compare_bytes(w, NULL):
                 raise Error("Expected 'null', received: " + bytes_to_string(w))
             v = Null()
