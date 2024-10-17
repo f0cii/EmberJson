@@ -5,17 +5,17 @@ from sys.intrinsics import likely
 
 alias Bytes = String._buffer_type
 alias Byte = UInt8
+alias ByteVec = SIMD[DType.uint8, _]
 
 
 @always_inline
 fn to_byte(s: String) -> Byte:
     return Byte(ord(s))
 
-
+var spaces = ByteVec[8](SPACE, NEWLINE, TAB, LINE_FEED)
 @always_inline
 fn is_space(char: Byte) -> Bool:
-    return char == SPACE or char == NEWLINE or char == TAB or char == LINE_FEED
-
+    return char in spaces
 
 @always_inline
 fn bytes_to_string[origin: MutableOrigin, //](b: Span[Byte, origin]) -> String:
@@ -83,10 +83,11 @@ struct Reader:
 
     @always_inline
     fn read_word(inout self) -> Span[Byte, __origin_of(self._data)]:
+        var end_chars = ByteVec[4](COMMA, RCURLY, RBRACKET)
         @always_inline
         @parameter
         fn func(c: Byte) -> Bool:
-            return not is_space(c) and c != COMMA and c != RCURLY and c != RBRACKET
+            return not is_space(c) and not c in end_chars
 
         return self.read_while[func]()
 

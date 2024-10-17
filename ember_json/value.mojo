@@ -1,6 +1,6 @@
 from .object import Object
 from .array import Array
-from .reader import Reader, Byte, Bytes, bytes_to_string, byte_to_string, compare_bytes, to_byte, compare_simd
+from .reader import Reader, Byte, Bytes, bytes_to_string, byte_to_string, compare_bytes, to_byte, compare_simd, ByteVec
 from utils import Variant, Span
 from .constants import *
 from sys.intrinsics import unlikely
@@ -24,8 +24,6 @@ struct Null(Stringable, EqualityComparableCollectionElement, Formattable, Repres
     fn format_to(self, inout writer: Formatter):
         writer.write(self.__str__())
 
-alias CharVec = SIMD[DType.uint8, _]
-
 @always_inline
 fn validate_string[origin: MutableOrigin](b: Span[Byte, origin]) raises:
     alias SOL = to_byte("/")
@@ -37,8 +35,8 @@ fn validate_string[origin: MutableOrigin](b: Span[Byte, origin]) raises:
     alias U = to_byte("u")
 
     # can't be alias for some reason
-    var acceptable_escapes = CharVec[16](QUOTE, RSOL, SOL, B, F, N, R, T, U)
-    var control_chars = CharVec[4](NEWLINE, TAB, LINE_FEED)
+    var acceptable_escapes = ByteVec[16](QUOTE, RSOL, SOL, B, F, N, R, T, U)
+    var control_chars = ByteVec[4](NEWLINE, TAB, LINE_FEED)
     i = 0
     while i < len(b):
         var char = b[i]
@@ -75,7 +73,7 @@ var NULL = SIMD[DType.uint8, 4](to_byte("n"), to_byte("u"), to_byte("l"), to_byt
 @always_inline
 @parameter
 fn is_numerical_component(char: Byte) -> Bool:
-    var componenents = CharVec[8](DOT, LOW_E, UPPER_E, PLUS, NEG)
+    var componenents = ByteVec[8](DOT, LOW_E, UPPER_E, PLUS, NEG)
     return isdigit(char) or char in componenents
 
 @always_inline
@@ -84,8 +82,8 @@ fn _read_number(inout reader: Reader) raises -> Variant[Int, Float64]:
     var is_float = False
     var first_digit_found = False
     var leading_zero = False
-    var float_parts = CharVec[4](DOT, LOW_E, UPPER_E)
-    var sign_parts = CharVec[2](PLUS, NEG)
+    var float_parts = ByteVec[4](DOT, LOW_E, UPPER_E)
+    var sign_parts = ByteVec[2](PLUS, NEG)
     for i in range(len(num)):
         var b = num[i]
         if b in float_parts:
