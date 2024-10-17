@@ -2,7 +2,7 @@ from .object import Object
 from .value import Value
 from .reader import Reader
 from .constants import *
-from sys.intrinsics import unlikely
+from sys.intrinsics import unlikely, likely
 
 
 @value
@@ -16,12 +16,15 @@ struct Array(EqualityComparableCollectionElement, Sized, Formattable, Stringable
     fn __init__(inout self, owned *values: Value):
         self._data = Self.Type(variadic_list=values^)
 
+    @always_inline
     fn __getitem__(ref [_]self, ind: Int) -> ref [self._data] Value:
         return self._data[ind]
 
+    @always_inline
     fn __setitem(inout self, ind: Int, owned item: Value):
         self._data[ind] = item^
 
+    @always_inline
     fn __len__(self) -> Int:
         return len(self._data)
 
@@ -51,12 +54,15 @@ struct Array(EqualityComparableCollectionElement, Sized, Formattable, Stringable
                 writer.write(", ")
         writer.write("]")
 
+    @always_inline
     fn __str__(self) -> String:
         return String.format_sequence(self)
 
+    @always_inline
     fn __repr__(self) -> String:
         return self.__str__()
 
+    @always_inline
     fn append(inout self, owned item: Value):
         self._data.append(item^)
 
@@ -65,15 +71,14 @@ struct Array(EqualityComparableCollectionElement, Sized, Formattable, Stringable
         var out = Self()
         reader.inc()
         reader.skip_whitespace()
-        while reader.peek() != RBRACKET:
-            var v = Value._from_reader(reader)
-            out.append(v^)
+        while likely(reader.peek() != RBRACKET):
+            out.append(Value._from_reader(reader))
             var has_comma = False 
             if reader.peek() == COMMA:
                 has_comma = True
                 reader.inc()
             reader.skip_whitespace()
-            if reader.peek() == RBRACKET and has_comma:
+            if unlikely(reader.peek() == RBRACKET and has_comma):
                 raise Error("Illegal trailing comma")
         reader.inc()
         return out^

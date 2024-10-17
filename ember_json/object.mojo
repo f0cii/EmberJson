@@ -2,7 +2,7 @@ from .reader import Reader, bytes_to_string
 from .value import Value, Null
 from collections import Dict
 from .constants import *
-from sys.intrinsics import unlikely
+from sys.intrinsics import unlikely, likely
 
 
 @value
@@ -62,9 +62,11 @@ struct Object(EqualityComparableCollectionElement, Sized, Formattable, Stringabl
 
         writer.write("}")
 
+    @always_inline
     fn __str__(self) -> String:
         return String.format_sequence(self)
 
+    @always_inline
     fn __repr__(self) -> String:
         return self.__str__()
 
@@ -73,7 +75,7 @@ struct Object(EqualityComparableCollectionElement, Sized, Formattable, Stringabl
         reader.inc()
         var out = Self()
         reader.skip_whitespace()
-        while reader.peek() != RCURLY:
+        while likely(reader.peek() != RCURLY):
             if unlikely(reader.peek() != QUOTE):
                 raise Error("Invalid identifier")
             reader.inc()

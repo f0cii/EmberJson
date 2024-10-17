@@ -1,8 +1,9 @@
 from .object import Object
 from .array import Array
-from .reader import Reader, Byte, Bytes, bytes_to_string, byte_to_string, compare_bytes, to_byte
+from .reader import Reader, Byte, Bytes, bytes_to_string, byte_to_string, compare_bytes, to_byte, compare_simd, steal_bytes
 from utils import Variant, Span
 from .constants import *
+from sys.intrinsics import unlikely
 
 
 @value
@@ -23,6 +24,7 @@ struct Null(Stringable, EqualityComparableCollectionElement, Formattable, Repres
     fn format_to(self, inout writer: Formatter):
         writer.write(self.__str__())
 
+alias CHAR_VEC = SIMD[DType.uint8, _]
 
 fn validate_string[origin: MutableOrigin](b: Span[Byte, origin]) raises:
     alias SOL = to_byte("/")
@@ -32,25 +34,30 @@ fn validate_string[origin: MutableOrigin](b: Span[Byte, origin]) raises:
     alias R = to_byte("r")
     alias T = to_byte("t")
     alias U = to_byte("u")
+
+    # can't be alias for some reason
+    var acceptable_escapes = CHAR_VEC[16](QUOTE, RSOL, SOL, B, F, N, R, T, U)
+    var control_chars = CHAR_VEC[4](NEWLINE, TAB, LINE_FEED)
     i = 0
     while i < len(b):
         var char = b[i]
         if char == RSOL:
             var next = b[i + 1]
-            if not (
-                next == QUOTE
-                or next == RSOL
-                or next == SOL
-                or next == B
-                or next == F
-                or next == N
-                or next == R
-                or next == T
-                or next == U
-            ):
+            if unlikely(not next in acceptable_escapes):
+            # if not (
+            #     next == QUOTE
+            #     or next == RSOL
+            #     or next == SOL
+            #     or next == B
+            #     or next == F
+            #     or next == N
+            #     or next == R
+            #     or next == T
+            #     or next == U
+            # ):
                 raise Error("Invalid escape sequence: " + byte_to_string(char) + byte_to_string(next))
             i += 1
-        if char == NEWLINE or char == TAB or char == LINE_FEED:
+        if unlikely(char in control_chars):
             raise Error("Control characters must be escaped")
         i += 1
 
@@ -70,15 +77,16 @@ alias PLUS = to_byte("+")
 alias NEG = to_byte("-")
 alias ZERO_CHAR = to_byte("0")
 
-var TRUE = Bytes(to_byte("t"), to_byte("r"), to_byte("u"), to_byte("e"))
+var TRUE = SIMD[DType.uint8, 4](to_byte("t"), to_byte("r"), to_byte("u"), to_byte("e"))
 var FALSE = Bytes(to_byte("f"), to_byte("a"), to_byte("l"), to_byte("s"), to_byte("e"))
-var NULL = Bytes(to_byte("n"), to_byte("u"), to_byte("l"), to_byte("l"))
+var NULL = SIMD[DType.uint8, 4](to_byte("n"), to_byte("u"), to_byte("l"), to_byte("l"))
 
 
 @always_inline
 @parameter
 fn is_numerical_component(char: Byte) -> Bool:
-    return isdigit(char) or char == DOT or char == LOW_E or char == UPPER_E or char == PLUS or char == NEG
+    var componenents = CHAR_VEC[8](DOT, LOW_E, UPPER_E, PLUS, NEG)
+    return isdigit(char) or char in componenents
 
 
 fn _read_number(inout reader: Reader) raises -> Variant[Int, Float64]:
@@ -104,9 +112,9 @@ fn _read_number(inout reader: Reader) raises -> Variant[Int, Float64]:
                 first_digit_found = True
 
     if is_float:
-        return atof(bytes_to_string(num^))
+        return atof(bytes_to_string(num))
 
-    var parsed = atol(bytes_to_string(num^))
+    var parsed = atol(bytes_to_string(num))
     if leading_zero and parsed != 0:
         raise Error("Integer cannot have leading zero")
     return parsed
@@ -118,19 +126,19 @@ struct Value(EqualityComparableCollectionElement, Stringable, Formattable, Repre
     var _data: Self.Type
 
     fn __init__(inout self, owned v: Self.Type):
+        self._data = v^
+
+    fn __init__(inout self, v: Int):
         self._data = v
 
-    fn __init__(inout self, owned v: Int):
-        self._data = v
-
-    fn __init__(inout self, owned v: Float64):
+    fn __init__(inout self, v: Float64):
         self._data = v
 
     fn __init__(inout self, owned v: Object):
-        self._data = v
+        self._data = v^
 
     fn __init__(inout self, owned v: Array):
-        self._data = v
+        self._data = v^
 
     fn __init__(inout self, v: StringLiteral):
         self._data = String(v)
@@ -226,10 +234,10 @@ struct Value(EqualityComparableCollectionElement, Stringable, Formattable, Repre
         var v: Value
         var n = reader.peek()
         if n == QUOTE:
-            return _read_string(reader)
+            v = _read_string(reader)
         elif n == T:
             var w = reader.read_word()
-            if not compare_bytes(w, TRUE):
+            if not compare_simd(w, TRUE):
                 raise Error("Expected 'true', received: " + bytes_to_string(w))
             v = True
         elif n == F:
@@ -239,7 +247,7 @@ struct Value(EqualityComparableCollectionElement, Stringable, Formattable, Repre
             v = False
         elif n == N:
             var w = reader.read_word()
-            if not compare_bytes(w, NULL):
+            if not compare_simd(w, NULL):
                 raise Error("Expected 'null', received: " + bytes_to_string(w))
             v = Null()
         elif n == LCURLY:
@@ -253,7 +261,6 @@ struct Value(EqualityComparableCollectionElement, Stringable, Formattable, Repre
             else:
                 v = num.unsafe_take[Float64]()
         else:
-            print(reader.remaining())
             raise Error("Invalid json value")
         reader.skip_whitespace()
         return v^
