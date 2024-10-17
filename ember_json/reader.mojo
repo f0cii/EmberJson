@@ -53,7 +53,7 @@ struct Reader:
         self._index = 0
 
     @always_inline
-    fn peek(ref [_]self) -> ref [self._data] Byte:
+    fn peek(self) -> Byte:
         return self._data[self._index]
 
     @always_inline

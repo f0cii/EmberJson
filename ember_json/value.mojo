@@ -1,6 +1,6 @@
 from .object import Object
 from .array import Array
-from .reader import Reader, Byte, Bytes, bytes_to_string, byte_to_string, compare_bytes, to_byte, compare_simd, steal_bytes
+from .reader import Reader, Byte, Bytes, bytes_to_string, byte_to_string, compare_bytes, to_byte, compare_simd
 from utils import Variant, Span
 from .constants import *
 from sys.intrinsics import unlikely
@@ -44,17 +44,6 @@ fn validate_string[origin: MutableOrigin](b: Span[Byte, origin]) raises:
         if char == RSOL:
             var next = b[i + 1]
             if unlikely(not next in acceptable_escapes):
-            # if not (
-            #     next == QUOTE
-            #     or next == RSOL
-            #     or next == SOL
-            #     or next == B
-            #     or next == F
-            #     or next == N
-            #     or next == R
-            #     or next == T
-            #     or next == U
-            # ):
                 raise Error("Invalid escape sequence: " + byte_to_string(char) + byte_to_string(next))
             i += 1
         if unlikely(char in control_chars):
