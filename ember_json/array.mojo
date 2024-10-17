@@ -64,20 +64,19 @@ struct Array(EqualityComparableCollectionElement, Sized, Formattable, Stringable
     fn _from_reader(inout reader: Reader) raises -> Array:
         var out = Self()
         reader.inc()
+        reader.skip_whitespace()
         while reader.peek() != RBRACKET:
-            reader.skip_whitespace()
-            if reader.peek() == RBRACKET:
-                # empty array
-                break
             var v = Value._from_reader(reader)
-            out.append(v)
-            var has_comma = reader.peek() == COMMA
-            reader.skip_if(COMMA)
+            out.append(v^)
+            var has_comma = False 
+            if reader.peek() == COMMA:
+                has_comma = True
+                reader.inc()
             reader.skip_whitespace()
             if reader.peek() == RBRACKET and has_comma:
                 raise Error("Illegal trailing comma")
         reader.inc()
-        return out
+        return out^
 
     @staticmethod
     fn from_string(owned input: String) raises -> Array:

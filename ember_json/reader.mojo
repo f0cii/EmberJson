@@ -33,6 +33,8 @@ fn compare_bytes[o1: MutableOrigin, o2: MutableOrigin, //](l: Span[Byte, o1], r:
         return False
     return memcmp(l.unsafe_ptr(), r.unsafe_ptr(), len(l)) == 0
 
+fn compare[origin: MutableOrigin, len: Int, //](l: Span[Byte, origin], r: SIMD[DType.uint8, len])
+
 
 struct Reader:
     var _data: Bytes
@@ -46,14 +48,16 @@ struct Reader:
         self._index = 0
 
     @always_inline
-    fn peek(self) -> Byte:
+    fn peek(ref [_]self) -> ref [self._data] Byte:
         return self._data[self._index]
 
+    @always_inline
     fn next(inout self, chars: Int = 1) -> Span[Byte, __origin_of(self._data)]:
         var start = self._index
         self.inc(chars)
         return Span(self._data)[start : self._index]
 
+    @always_inline
     fn read_until(inout self, char: Byte) -> Span[Byte, __origin_of(self._data)]:
         @parameter
         fn not_char(c: Byte) -> Bool:
@@ -61,6 +65,7 @@ struct Reader:
 
         return self.read_while[not_char]()
 
+    @always_inline
     fn read_string(inout self) -> Span[Byte, __origin_of(self._data)]:
         var start = self._index
         while likely(self._index < len(self._data)):
@@ -71,6 +76,7 @@ struct Reader:
             self.inc()
         return Span(self._data)[start : self._index]
 
+    @always_inline
     fn read_word(inout self) -> Span[Byte, __origin_of(self._data)]:
         @always_inline
         @parameter
@@ -79,6 +85,7 @@ struct Reader:
 
         return self.read_while[func]()
 
+    @always_inline
     fn read_while[func: fn (char: Byte) capturing -> Bool](inout self) -> Span[Byte, __origin_of(self._data)]:
         var start = self._index
         while likely(self._index < len(self._data)) and func(self.peek()):

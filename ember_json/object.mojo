@@ -72,11 +72,8 @@ struct Object(EqualityComparableCollectionElement, Sized, Formattable, Stringabl
     fn _from_reader(inout reader: Reader) raises -> Object:
         reader.inc()
         var out = Self()
+        reader.skip_whitespace()
         while reader.peek() != RCURLY:
-            reader.skip_whitespace()
-            if reader.peek() == RCURLY:
-                # empty object
-                break
             if unlikely(reader.peek() != QUOTE):
                 raise Error("Invalid identifier")
             reader.inc()
@@ -87,14 +84,16 @@ struct Object(EqualityComparableCollectionElement, Sized, Formattable, Stringabl
                 raise Error("Invalid identifier")
             reader.inc()
             var val = Value._from_reader(reader)
-            var has_comma = reader.peek() == COMMA
-            reader.skip_if(COMMA)
+            var has_comma = False
+            if reader.peek() == COMMA:
+                has_comma = True
+                reader.inc()
             reader.skip_whitespace()
             if unlikely(reader.peek() == RCURLY and has_comma):
                 raise Error("Illegal trailing comma")
             out[bytes_to_string(ident^)] = val^
         reader.inc()
-        return out
+        return out^
 
     @staticmethod
     fn from_string(owned s: String) raises -> Object:

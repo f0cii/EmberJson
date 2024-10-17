@@ -6,6 +6,7 @@ from .constants import *
 
 
 @value
+@register_passable("trivial")
 struct Null(Stringable, EqualityComparableCollectionElement, Formattable, Representable):
     fn __eq__(self, n: Null) -> Bool:
         return True
@@ -116,19 +117,19 @@ struct Value(EqualityComparableCollectionElement, Stringable, Formattable, Repre
     alias Type = Variant[Int, Float64, String, Bool, Object, Array, Null]
     var _data: Self.Type
 
-    fn __init__(inout self, v: Self.Type):
+    fn __init__(inout self, owned v: Self.Type):
         self._data = v
 
-    fn __init__(inout self, v: Int):
+    fn __init__(inout self, owned v: Int):
         self._data = v
 
-    fn __init__(inout self, v: Float64):
+    fn __init__(inout self, owned v: Float64):
         self._data = v
 
-    fn __init__(inout self, v: Object):
+    fn __init__(inout self, owned v: Object):
         self._data = v
 
-    fn __init__(inout self, v: Array):
+    fn __init__(inout self, owned v: Array):
         self._data = v
 
     fn __init__(inout self, v: StringLiteral):
@@ -255,7 +256,7 @@ struct Value(EqualityComparableCollectionElement, Stringable, Formattable, Repre
             print(reader.remaining())
             raise Error("Invalid json value")
         reader.skip_whitespace()
-        return v
+        return v^
 
     @staticmethod
     fn from_string(owned input: String) raises -> Value:
