@@ -26,6 +26,7 @@ struct Null(Stringable, EqualityComparableCollectionElement, Formattable, Repres
 
 alias CharVec = SIMD[DType.uint8, _]
 
+@always_inline
 fn validate_string[origin: MutableOrigin](b: Span[Byte, origin]) raises:
     alias SOL = to_byte("/")
     alias B = to_byte("b")
@@ -77,7 +78,7 @@ fn is_numerical_component(char: Byte) -> Bool:
     var componenents = CharVec[8](DOT, LOW_E, UPPER_E, PLUS, NEG)
     return isdigit(char) or char in componenents
 
-
+@always_inline
 fn _read_number(inout reader: Reader) raises -> Variant[Int, Float64]:
     var num = reader.read_while[is_numerical_component]()
     var is_float = False
