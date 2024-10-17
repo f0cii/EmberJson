@@ -1,9 +1,11 @@
 from utils import StringSlice, Span
 from memory import memcmp
 from .constants import *
+from sys.intrinsics import likely
 
 alias Bytes = String._buffer_type
 alias Byte = UInt8
+
 
 @always_inline
 fn to_byte(s: String) -> Byte:
@@ -15,13 +17,18 @@ fn is_space(char: Byte) -> Bool:
 
 
 @always_inline
-fn bytes_to_string[origin: MutableOrigin,//](b: Span[Byte, origin]) -> String:
+fn bytes_to_string[origin: MutableOrigin, //](b: Span[Byte, origin]) -> String:
     var s = String(b)
     s._buffer.append(0)
     return s
 
 
-fn compare_bytes[o1: MutableOrigin, o2: MutableOrigin,//](l: Span[Byte, o1], r: Span[Byte, o2]) -> Bool:
+@always_inline
+fn byte_to_string(b: Byte) -> String:
+    return chr(int(b))
+
+
+fn compare_bytes[o1: MutableOrigin, o2: MutableOrigin, //](l: Span[Byte, o1], r: Span[Byte, o2]) -> Bool:
     if len(l) != len(r):
         return False
     return memcmp(l.unsafe_ptr(), r.unsafe_ptr(), len(l)) == 0
@@ -45,7 +52,7 @@ struct Reader:
     fn next(inout self, chars: Int = 1) -> Span[Byte, __origin_of(self._data)]:
         var start = self._index
         self.inc(chars)
-        return Span(self._data)[start : start + chars]
+        return Span(self._data)[start : self._index]
 
     fn read_until(inout self, char: Byte) -> Span[Byte, __origin_of(self._data)]:
         @parameter
@@ -53,6 +60,16 @@ struct Reader:
             return c != char
 
         return self.read_while[not_char]()
+
+    fn read_string(inout self) -> Span[Byte, __origin_of(self._data)]:
+        var start = self._index
+        while likely(self._index < len(self._data)):
+            if self.peek() == QUOTE:
+                break
+            if self.peek() == RSOL:
+                self.inc()
+            self.inc()
+        return Span(self._data)[start : self._index]
 
     fn read_word(inout self) -> Span[Byte, __origin_of(self._data)]:
         @always_inline
@@ -64,13 +81,13 @@ struct Reader:
 
     fn read_while[func: fn (char: Byte) capturing -> Bool](inout self) -> Span[Byte, __origin_of(self._data)]:
         var start = self._index
-        while self._index < len(self._data) and func(self.peek()):
+        while likely(self._index < len(self._data)) and func(self.peek()):
             self.inc()
         return Span(self._data)[start : self._index]
 
     @always_inline
     fn skip_whitespace(inout self):
-        while self._index < len(self._data) and is_space(self.peek()):
+        while likely(self._index < len(self._data)) and is_space(self.peek()):
             self.inc()
 
     @always_inline
@@ -83,9 +100,13 @@ struct Reader:
             self.inc()
 
     @always_inline
-    fn remaining(self) -> Span[Byte, __origin_of(self._data)]:
-        return Span(self._data)[self._index :]
+    fn remaining(self) -> String:
+        return String(self._data[self._index :] + Byte(0))
 
     @always_inline
     fn bytes_remaining(self) -> Int:
-        return (len(self._data) - 1) - self._index
+        return len(self._data) - self._index
+
+    @always_inline
+    fn has_more(self) -> Bool:
+        return self.bytes_remaining() != 0

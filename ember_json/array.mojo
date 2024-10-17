@@ -2,6 +2,7 @@ from .object import Object
 from .value import Value
 from .reader import Reader
 from .constants import *
+from sys.intrinsics import unlikely
 
 
 @value
@@ -24,11 +25,15 @@ struct Array(EqualityComparableCollectionElement, Sized, Formattable, Stringable
     fn __len__(self) -> Int:
         return len(self._data)
 
-    fn __contains__[T: ComparableCollectionElement, //](self, item: T) -> Bool:
+    fn __contains__[T: EqualityComparableCollectionElement, //](self, item: T) -> Bool:
         for v in self._data:
             if v[].isa[T]() and v[].get[T]() == item:
                 return True
         return False
+
+    @always_inline
+    fn __contains__(self, v: Value) -> Bool:
+        return v in self._data
 
     @always_inline
     fn __eq__(self, other: Self) -> Bool:
@@ -61,10 +66,16 @@ struct Array(EqualityComparableCollectionElement, Sized, Formattable, Stringable
         reader.inc()
         while reader.peek() != RBRACKET:
             reader.skip_whitespace()
+            if reader.peek() == RBRACKET:
+                # empty array
+                break
             var v = Value._from_reader(reader)
             out.append(v)
+            var has_comma = reader.peek() == COMMA
             reader.skip_if(COMMA)
             reader.skip_whitespace()
+            if reader.peek() == RBRACKET and has_comma:
+                raise Error("Illegal trailing comma")
         reader.inc()
         return out
 

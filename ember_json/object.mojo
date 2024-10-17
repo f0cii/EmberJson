@@ -2,6 +2,7 @@ from .reader import Reader, bytes_to_string
 from .value import Value, Null
 from collections import Dict
 from .constants import *
+from sys.intrinsics import unlikely
 
 
 @value
@@ -73,18 +74,24 @@ struct Object(EqualityComparableCollectionElement, Sized, Formattable, Stringabl
         var out = Self()
         while reader.peek() != RCURLY:
             reader.skip_whitespace()
-            if reader.peek() != QUOTE:
+            if reader.peek() == RCURLY:
+                # empty object
+                break
+            if unlikely(reader.peek() != QUOTE):
                 raise Error("Invalid identifier")
             reader.inc()
-            var ident = reader.read_until(QUOTE)
+            var ident = reader.read_string()
             reader.inc()
             reader.skip_whitespace()
-            if reader.peek() != COLON:
+            if unlikely(reader.peek() != COLON):
                 raise Error("Invalid identifier")
             reader.inc()
             var val = Value._from_reader(reader)
+            var has_comma = reader.peek() == COMMA
             reader.skip_if(COMMA)
             reader.skip_whitespace()
+            if unlikely(reader.peek() == RCURLY and has_comma):
+                raise Error("Illegal trailing comma")
             out[bytes_to_string(ident^)] = val^
         reader.inc()
         return out

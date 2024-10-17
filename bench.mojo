@@ -12,7 +12,9 @@ fn main() raises:
     m.bench_function[benchmark_json_array_large](BenchId("JsonArrayLarge"))
     m.bench_function[benchmark_json_array_extra_large](BenchId("JsonArrayExtraLarge"))
     m.bench_function[benchmark_json_big_big_big](BenchId("JsonArrayVeryBig"))
+    m.bench_function[benchmark_json_parse_big3](BenchId("JsonBig3"))
     m.dump_report()
+
 
 @parameter
 fn benchmark_json_parse_small(inout b: Bencher) raises:
@@ -38,6 +40,14 @@ fn benchmark_json_array_large(inout b: Bencher) raises:
         _ = JSON.from_string(large_array)
     b.iter[do]()
 
+fn get_data(file: String) -> String:
+    try:
+        with open("./bench_data/data/" + file, "r") as f:
+            return f.read()
+    except:
+        pass
+    return "READ FAILED"
+
 @parameter
 fn benchmark_json_array_extra_large(inout b: Bencher) raises:
     var data: String
@@ -50,18 +60,29 @@ fn benchmark_json_array_extra_large(inout b: Bencher) raises:
         _ = JSON.from_string(data)
     b.iter[do]()
 
+var data = get_data("canada.json")
+
 @parameter
 fn benchmark_json_big_big_big(inout b: Bencher) raises:
-    var data: String
-    with open("./bench_data/canada_data.json", "r") as f:
-        data = f.read()
-    
     @always_inline
     @parameter
     fn do() raises:
         _ = JSON.from_string(data)
     b.iter[do]()
 
+var d1 = get_data("canada.json")
+var d2 = get_data("citm_catalog.json")
+var d3 = get_data("twitter.json")
+
+@parameter
+fn benchmark_json_parse_big3(inout b: Bencher) raises:
+    @always_inline
+    @parameter
+    fn do() raises:
+        _ = JSON.from_string(d1)
+        _ = JSON.from_string(d2)
+        _ = JSON.from_string(d3)
+    b.iter[do]()
 # source https://opensource.adobe.com/Spry/samples/data_region/JSONDataSetSample.html
 var small_data = """{
 	"id": "0001",

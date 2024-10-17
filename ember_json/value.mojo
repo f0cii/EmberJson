@@ -1,6 +1,6 @@
 from .object import Object
 from .array import Array
-from .reader import Reader, Byte, Bytes, bytes_to_string, compare_bytes, to_byte
+from .reader import Reader, Byte, Bytes, bytes_to_string, byte_to_string, compare_bytes, to_byte
 from utils import Variant, Span
 from .constants import *
 
@@ -23,9 +23,41 @@ struct Null(Stringable, EqualityComparableCollectionElement, Formattable, Repres
         writer.write(self.__str__())
 
 
+fn validate_string[origin: MutableOrigin](b: Span[Byte, origin]) raises:
+    alias SOL = to_byte("/")
+    alias B = to_byte("b")
+    alias F = to_byte("f")
+    alias N = to_byte("n")
+    alias R = to_byte("r")
+    alias T = to_byte("t")
+    alias U = to_byte("u")
+    i = 0
+    while i < len(b):
+        var char = b[i]
+        if char == RSOL:
+            var next = b[i + 1]
+            if not (
+                next == QUOTE
+                or next == RSOL
+                or next == SOL
+                or next == B
+                or next == F
+                or next == N
+                or next == R
+                or next == T
+                or next == U
+            ):
+                raise Error("Invalid escape sequence: " + byte_to_string(char) + byte_to_string(next))
+            i += 1
+        if char == NEWLINE or char == TAB or char == LINE_FEED:
+            raise Error("Control characters must be escaped")
+        i += 1
+
+
 fn _read_string(inout reader: Reader) raises -> String:
     reader.inc()
-    var res = reader.read_until(QUOTE)
+    var res = reader.read_string()
+    validate_string(res)
     reader.inc()
     return bytes_to_string(res)
 
@@ -35,26 +67,48 @@ alias LOW_E = to_byte("e")
 alias UPPER_E = to_byte("E")
 alias PLUS = to_byte("+")
 alias NEG = to_byte("-")
+alias ZERO_CHAR = to_byte("0")
 
 var TRUE = Bytes(to_byte("t"), to_byte("r"), to_byte("u"), to_byte("e"))
 var FALSE = Bytes(to_byte("f"), to_byte("a"), to_byte("l"), to_byte("s"), to_byte("e"))
 var NULL = Bytes(to_byte("n"), to_byte("u"), to_byte("l"), to_byte("l"))
+
 
 @always_inline
 @parameter
 fn is_numerical_component(char: Byte) -> Bool:
     return isdigit(char) or char == DOT or char == LOW_E or char == UPPER_E or char == PLUS or char == NEG
 
+
 fn _read_number(inout reader: Reader) raises -> Variant[Int, Float64]:
     var num = reader.read_while[is_numerical_component]()
     var is_float = False
-    for b in num:
-        if b[] == DOT:
+    var first_digit_found = False
+    var leading_zero = False
+    for i in range(len(num)):
+        var b = num[i]
+        if b == DOT or b == LOW_E or b == UPPER_E:
             is_float = True
+        if b == PLUS or b == NEG:
+            var j = i + 1
+            if j < len(num):
+                # atof doesn't reject numbers like 0e+-1
+                var after = num[j]
+                if after == PLUS or after == NEG:
+                    raise Error("Invalid number: " + bytes_to_string(num))
+        if isdigit(b):
+            if not first_digit_found and b == ZERO_CHAR:
+                leading_zero = True
+            else:
+                first_digit_found = True
 
     if is_float:
         return atof(bytes_to_string(num^))
-    return atol(bytes_to_string(num^))
+
+    var parsed = atol(bytes_to_string(num^))
+    if leading_zero and parsed != 0:
+        raise Error("Integer cannot have leading zero")
+    return parsed
 
 
 @value
@@ -116,28 +170,28 @@ struct Value(EqualityComparableCollectionElement, Stringable, Formattable, Repre
     fn isa[T: CollectionElement](self) -> Bool:
         return self._data.isa[T]()
 
-    fn get[T: CollectionElement](ref [_]self) -> ref[self._data] T:
+    fn get[T: CollectionElement](ref [_]self) -> ref [self._data] T:
         return self._data[T]
 
-    fn int(ref [_]self) -> ref[self._data] Int:
+    fn int(ref [_]self) -> ref [self._data] Int:
         return self.get[Int]()
 
-    fn null(ref [_]self) -> ref[self._data] Null:
+    fn null(ref [_]self) -> ref [self._data] Null:
         return self.get[Null]()
 
-    fn string(ref [_]self) -> ref[self._data] String:
+    fn string(ref [_]self) -> ref [self._data] String:
         return self.get[String]()
 
-    fn float(ref [_]self) -> ref[self._data] Float64:
+    fn float(ref [_]self) -> ref [self._data] Float64:
         return self.get[Float64]()
 
-    fn bool(ref [_]self) -> ref[self._data] Bool:
+    fn bool(ref [_]self) -> ref [self._data] Bool:
         return self.get[Bool]()
 
-    fn object(ref [_]self) -> ref[self._data] Object:
+    fn object(ref [_]self) -> ref [self._data] Object:
         return self.get[Object]()
 
-    fn array(ref [_]self) -> ref[self._data] Array:
+    fn array(ref [_]self) -> ref [self._data] Array:
         return self.get[Array]()
 
     fn format_to(self, inout writer: Formatter):
@@ -198,6 +252,7 @@ struct Value(EqualityComparableCollectionElement, Stringable, Formattable, Repre
             else:
                 v = num.unsafe_take[Float64]()
         else:
+            print(reader.remaining())
             raise Error("Invalid json value")
         reader.skip_whitespace()
         return v

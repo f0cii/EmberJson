@@ -37,6 +37,23 @@ struct JSON(EqualityComparableCollectionElement, Stringable, Formattable, Repres
             raise Error("Object key expected to be string")
         return self.array()[ind]
 
+    fn __setitem__(inout self, key: String, owned item: Value) raises:
+        if not self.is_object():
+            raise Error("Object key expected to be string")
+        self.object()[key] = item^
+
+    fn __setitem__(inout self, ind: Int, owned item: Value) raises:
+        if not self.is_array():
+            raise Error("Array index must be an int")
+        self.array()[ind] = item^
+
+    fn __contains__(self, v: Value) -> Bool:
+        if self.is_array():
+            return v in self.array()
+        if not v.isa[String]():
+            return False
+        return v.string() in self.object()
+
     fn __eq__(self, other: Self) -> Bool:
         if self.is_object() and other.is_object():
             return self.object() == other.object()
@@ -90,5 +107,9 @@ struct JSON(EqualityComparableCollectionElement, Stringable, Formattable, Repres
             data = Array._from_reader(reader)
         else:
             raise Error("Invalid json")
+
+        reader.skip_whitespace()
+        if reader.has_more():
+            raise Error("Invalid json, expected end of input, recieved: " + reader.remaining())
 
         return data

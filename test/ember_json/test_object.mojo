@@ -36,7 +36,7 @@ def test_arr_in_object():
     assert_equal(ob["arr"].array()[2].string(), "foo")
 
 def test_multiple_keys():
-    var s = '{"k1": 123, "k2": 456,}'
+    var s = '{"k1": 123, "k2": 456}'
     var ob = Object.from_string(s)
     assert_true("k1" in ob)
     assert_true("k2" in ob)
