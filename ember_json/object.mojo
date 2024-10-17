@@ -14,8 +14,8 @@ struct Object(EqualityComparableCollectionElement, Sized, Formattable, Stringabl
         self._data = Self.Type()
 
     @always_inline
-    fn __setitem__(inout self, key: String, owned item: Value):
-        self._data[key] = item^
+    fn __setitem__(inout self, owned key: String, owned item: Value):
+        self._data[key^] = item^
 
     fn __getitem__(ref [_]self, key: String) raises -> ref [self._data._entries[0].value().value] Value:
         return self._data._find_ref(key)

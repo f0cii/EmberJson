@@ -1,6 +1,5 @@
 from ember_json import *
 from benchmark import *
-from .bench_data import *
 
 fn main() raises:
     var config = BenchConfig()

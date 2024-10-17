@@ -24,7 +24,7 @@ struct Null(Stringable, EqualityComparableCollectionElement, Formattable, Repres
     fn format_to(self, inout writer: Formatter):
         writer.write(self.__str__())
 
-alias CHAR_VEC = SIMD[DType.uint8, _]
+alias CharVec = SIMD[DType.uint8, _]
 
 fn validate_string[origin: MutableOrigin](b: Span[Byte, origin]) raises:
     alias SOL = to_byte("/")
@@ -36,8 +36,8 @@ fn validate_string[origin: MutableOrigin](b: Span[Byte, origin]) raises:
     alias U = to_byte("u")
 
     # can't be alias for some reason
-    var acceptable_escapes = CHAR_VEC[16](QUOTE, RSOL, SOL, B, F, N, R, T, U)
-    var control_chars = CHAR_VEC[4](NEWLINE, TAB, LINE_FEED)
+    var acceptable_escapes = CharVec[16](QUOTE, RSOL, SOL, B, F, N, R, T, U)
+    var control_chars = CharVec[4](NEWLINE, TAB, LINE_FEED)
     i = 0
     while i < len(b):
         var char = b[i]
@@ -74,7 +74,7 @@ var NULL = SIMD[DType.uint8, 4](to_byte("n"), to_byte("u"), to_byte("l"), to_byt
 @always_inline
 @parameter
 fn is_numerical_component(char: Byte) -> Bool:
-    var componenents = CHAR_VEC[8](DOT, LOW_E, UPPER_E, PLUS, NEG)
+    var componenents = CharVec[8](DOT, LOW_E, UPPER_E, PLUS, NEG)
     return isdigit(char) or char in componenents
 
 
@@ -83,16 +83,18 @@ fn _read_number(inout reader: Reader) raises -> Variant[Int, Float64]:
     var is_float = False
     var first_digit_found = False
     var leading_zero = False
+    var float_parts = CharVec[4](DOT, LOW_E, UPPER_E)
+    var sign_parts = CharVec[2](PLUS, NEG)
     for i in range(len(num)):
         var b = num[i]
-        if b == DOT or b == LOW_E or b == UPPER_E:
+        if b in float_parts:
             is_float = True
-        if b == PLUS or b == NEG:
+        if b in sign_parts:
             var j = i + 1
             if j < len(num):
                 # atof doesn't reject numbers like 0e+-1
                 var after = num[j]
-                if after == PLUS or after == NEG:
+                if after in sign_parts:
                     raise Error("Invalid number: " + bytes_to_string(num))
         if isdigit(b):
             if not first_digit_found and b == ZERO_CHAR:
@@ -127,6 +129,9 @@ struct Value(EqualityComparableCollectionElement, Stringable, Formattable, Repre
         self._data = v^
 
     fn __init__(inout self, owned v: Array):
+        self._data = v^
+
+    fn __init__(inout self, owned v: String):
         self._data = v^
 
     fn __init__(inout self, v: StringLiteral):
