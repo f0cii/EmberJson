@@ -3,7 +3,7 @@ authors = ["Brian Grenier <grenierb96@gmail.com>"]
 channels = ["conda-forge", "https://conda.modular.com/max-nightly/"]
 description = "A json library for Mojo"
 name = "EmberJson"
-platforms = ["osx-arm64"]
+platforms = ["linux-64", "osx-arm64"]
 version = "0.1.0"
 license = "MIT"
 license-file = "LICENSE"
@@ -11,7 +11,8 @@ homepage = "https://github.com/bgreni/EmberJson"
 repository = "https://github.com/bgreni/EmberJson"
 
 [tasks]
-build = { cmd = "bash scripts/build.sh", env = {MODULAR_MOJO_IMPORT_PATH = "$CONDA_PREFIX/lib/mojo"} }
+build = { cmd = "bash scripts/build.sh", env = {MODULAR_MOJO_IMPORT_PATH = "$CONDA_PREFIX/lib/mojo", REPO_URL = "https://conda.modular.com/max-nightly"} }
+publish = { cmd = "bash scripts/publish.sh", env = {PREFIX_CHANNEL = "mojo-libs-f0cii-nightly"} }
 template = { cmd = "magic run python3 scripts/templater.py" }
 format = { cmd = "magic run mojo format -l 120 ember_json" }
 test = { cmd = "magic run mojo test" }
@@ -19,3 +20,10 @@ bench = { cmd = "magic run mojo build bench.mojo && ./bench && rm bench" }
 
 [dependencies]
 max = ">=24.6.0.dev2024101605, <=25"
+
+[feature.dev.dependencies]
+rattler-build = "*"
+
+[environments]
+default = ["dev"]
+dev = ["dev"]
