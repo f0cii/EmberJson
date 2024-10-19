@@ -1,4 +1,4 @@
-from ember_json.value import Value, Null
+from emberjson.value import Value, Null
 from testing import *
 
 def test_bool():

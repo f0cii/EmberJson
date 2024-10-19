@@ -6,7 +6,7 @@ from sys.intrinsics import unlikely, likely
 
 
 @value
-struct Array(EqualityComparableCollectionElement, Sized, Formattable, Stringable, Representable):
+struct Array(EqualityComparableCollectionElement, Sized, Writable, Stringable, Representable):
     alias Type = List[Value]
     var _data: Self.Type
 
@@ -46,7 +46,7 @@ struct Array(EqualityComparableCollectionElement, Sized, Formattable, Stringable
     fn __ne__(self, other: Self) -> Bool:
         return self._data != other._data
 
-    fn format_to(self, inout writer: Formatter):
+    fn write_to[W: Writer](self, inout writer: W):
         writer.write("[")
         for i in range(len(self._data)):
             writer.write(self._data[i])
@@ -56,7 +56,7 @@ struct Array(EqualityComparableCollectionElement, Sized, Formattable, Stringable
 
     @always_inline
     fn __str__(self) -> String:
-        return String.format_sequence(self)
+        return String.write(self)
 
     @always_inline
     fn __repr__(self) -> String:

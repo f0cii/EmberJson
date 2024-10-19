@@ -1,4 +1,4 @@
-from ember_json.reader import Reader, Bytes
+from emberjson.reader import Reader, Bytes
 from testing import *
 
 def compare(l: Bytes, r: Bytes):

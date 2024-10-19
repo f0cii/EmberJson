@@ -1,8 +1,9 @@
 #!/bin/bash
 
 echo "Publishing nightly packages from $CONDA_BLD_PATH..."
-for file in output/**/*.conda; do
+for file in $CONDA_BLD_PATH/**/*.conda; do
     echo "Uploading $file..."
-    magic run rattler-build upload prefix -c "$PREFIX_CHANNEL" "$file" --api-key=$PREFIX_DEV_API_KEY || true
+    magic run rattler-build upload prefix -c "mojo-libs-f0cii-nightly-test" "$file" --api-key=$PREFIX_API_KEY || true
 done
-echo "Publishing completed."
+
+rm $CONDA_BLD_PATH/**/*.conda

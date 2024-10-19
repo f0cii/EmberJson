@@ -8,7 +8,7 @@ from sys.intrinsics import unlikely
 
 @value
 @register_passable("trivial")
-struct Null(Stringable, EqualityComparableCollectionElement, Formattable, Representable):
+struct Null(Stringable, EqualityComparableCollectionElement, Writable, Representable):
     fn __eq__(self, n: Null) -> Bool:
         return True
 
@@ -21,7 +21,7 @@ struct Null(Stringable, EqualityComparableCollectionElement, Formattable, Repres
     fn __repr__(self) -> String:
         return self.__str__()
 
-    fn format_to(self, inout writer: Formatter):
+    fn write_to[W: Writer](self, inout writer: W):
         writer.write(self.__str__())
 
 @always_inline
@@ -111,7 +111,7 @@ fn _read_number(inout reader: Reader) raises -> Variant[Int, Float64]:
 
 
 @value
-struct Value(EqualityComparableCollectionElement, Stringable, Formattable, Representable):
+struct Value(EqualityComparableCollectionElement, Stringable, Writable, Representable):
     alias Type = Variant[Int, Float64, String, Bool, Object, Array, Null]
     var _data: Self.Type
 
@@ -196,7 +196,7 @@ struct Value(EqualityComparableCollectionElement, Stringable, Formattable, Repre
     fn array(ref [_]self) -> ref [self._data] Array:
         return self.get[Array]()
 
-    fn format_to(self, inout writer: Formatter):
+    fn write_to[W: Writer](self, inout writer: W):
         if self.isa[Int]():
             writer.write(self.int())
         elif self.isa[Float64]():
@@ -215,11 +215,11 @@ struct Value(EqualityComparableCollectionElement, Stringable, Formattable, Repre
 
     @always_inline
     fn __str__(self) -> String:
-        return String.format_sequence(self)
+        return String.write(self)
 
     @always_inline
     fn __repr__(self) -> String:
-        return String.format_sequence(self)
+        return String.write(self)
 
     @staticmethod
     fn _from_reader(inout reader: Reader) raises -> Value:

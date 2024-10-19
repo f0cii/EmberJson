@@ -1,4 +1,4 @@
-from ember_json import JSON, Null, Array, Object
+from emberjson import JSON, Null, Array, Object
 from testing import *
 
 def test_json_object():

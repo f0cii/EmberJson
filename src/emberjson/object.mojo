@@ -6,7 +6,7 @@ from sys.intrinsics import unlikely, likely
 
 
 @value
-struct Object(EqualityComparableCollectionElement, Sized, Formattable, Stringable, Representable):
+struct Object(EqualityComparableCollectionElement, Sized, Writable, Stringable, Representable):
     alias Type = Dict[String, Value]
     var _data: Self.Type
 
@@ -47,7 +47,7 @@ struct Object(EqualityComparableCollectionElement, Sized, Formattable, Stringabl
     fn __ne__(self, other: Self) -> Bool:
         return not self == other
 
-    fn format_to(self, inout writer: Formatter):
+    fn write_to[W: Writer](self, inout writer: W):
         writer.write("{")
         var done = 0
         for k in self._data:
@@ -64,7 +64,7 @@ struct Object(EqualityComparableCollectionElement, Sized, Formattable, Stringabl
 
     @always_inline
     fn __str__(self) -> String:
-        return String.format_sequence(self)
+        return String.write(self)
 
     @always_inline
     fn __repr__(self) -> String:

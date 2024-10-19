@@ -8,7 +8,7 @@ package:
   version: {{VERSION}}
 
 source:
-  - path: ../ember_json
+  - path: ../src
   - path: ../{{LICENSE_FILE}}
 
 build:
@@ -16,7 +16,7 @@ build:
     # - magic run mojo package . -o {{PREFIX}}/{{NAME}}.mojopkg
     - echo mkdir ${PREFIX}/lib/mojo ...
     - mkdir -p $PREFIX/lib/mojo
-    - magic run mojo package . -o $PREFIX/lib/mojo/{{NAME}}.mojopkg
+    - magic run mojo package emberjson -o $PREFIX/lib/mojo/{{NAME}}.mojopkg
 
 requirements:
   run:

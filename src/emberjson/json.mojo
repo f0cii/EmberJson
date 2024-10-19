@@ -8,7 +8,7 @@ from os import abort
 
 
 @value
-struct JSON(EqualityComparableCollectionElement, Stringable, Formattable, Representable, Sized):
+struct JSON(EqualityComparableCollectionElement, Stringable, Writable, Representable, Sized):
     alias Type = Variant[Object, Array]
     var _data: Self.Type
 
@@ -69,15 +69,15 @@ struct JSON(EqualityComparableCollectionElement, Stringable, Formattable, Repres
     fn __len__(self) -> Int:
         return len(self.array()) if self.is_array() else len(self.object())
 
-    fn format_to(self, inout writer: Formatter):
+    fn write_to[W: Writer](self, inout writer: W):
         if self.is_object():
-            self.object().format_to(writer)
+            self.object().write_to(writer)
         elif self.is_array():
-            self.array().format_to(writer)
+            self.array().write_to(writer)
 
     @always_inline
     fn __str__(self) -> String:
-        return String.format_sequence(self)
+        return String.write(self)
 
     @always_inline
     fn __repr__(self) -> String:
